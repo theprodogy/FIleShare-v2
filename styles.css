@@ -525,6 +525,12 @@ body {
     background: var(--bg-hover);
     border-radius: var(--radius-sm);
     flex-shrink: 0;
+    color: var(--accent);
+}
+
+.link-item .link-icon svg {
+    width: 20px;
+    height: 20px;
 }
 
 .link-item .link-info {
@@ -602,15 +608,18 @@ body {
 }
 
 .profile-link-item .link-icon {
-    width: 48px;
-    height: 48px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    background: var(--accent-dim);
-    border-radius: var(--radius-sm);
     flex-shrink: 0;
+    color: var(--accent);
+}
+
+.profile-link-item .link-icon svg {
+    width: 20px;
+    height: 20px;
 }
 
 .profile-link-item .link-details {
@@ -639,10 +648,20 @@ body {
     font-size: 1.25rem;
     opacity: 0.5;
     transition: opacity 0.15s;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-link-item .link-action svg {
+    width: 20px;
+    height: 20px;
 }
 
 .profile-link-item:hover .link-action {
     opacity: 1;
+    color: var(--accent);
 }
 
 /* ===== PROFILE PAGE ===== */
@@ -921,3 +940,4 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
 }
+
