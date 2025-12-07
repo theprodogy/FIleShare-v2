@@ -723,11 +723,12 @@ body {
 
 .profile-folder-header h3 {
     flex: 1;
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 600;
     margin: 0;
-    text-transform: none;
-    letter-spacing: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
 }
 
 .profile-folder-header .folder-count {
@@ -1477,4 +1478,3 @@ body {
         flex: 1;
     }
 }
-
