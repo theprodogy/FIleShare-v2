@@ -910,7 +910,8 @@ class App {
         if (!this.isAdmin()) return this.showDashboard();
         
         await this.loadData();
-        const allUsers = Object.values(this.users).filter(u => !u._empty);
+        // Filter out invalid/empty user entries
+        const allUsers = Object.values(this.users).filter(u => u && u.username && u.slug);
         
         this.render(`
             <nav class="navbar">
@@ -966,6 +967,9 @@ class App {
     }
 
     renderAdminUserRow(user) {
+        // Skip invalid users
+        if (!user || !user.username || !user.slug) return '';
+        
         const isProtected = CONFIG.ADMIN_USERS.includes(user.slug);
         const tagInfo = this.getUserTag(user.slug);
         const tagHtml = tagInfo ? `<span class="user-tag ${tagInfo.tagClass}" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">${tagInfo.tag}</span>` : '';
