@@ -435,21 +435,14 @@ class App {
                                 <h3>Links & Files</h3>
                             </div>
                             
-                            <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">Add links to files, documents, websites, or anything you want to share.</p>
+                            <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">Organize your links into folders. Each folder can contain multiple links.</p>
                             
-                            <div id="links-list">
-                                ${(this.user.links || []).map((link, i) => `
-                                    <div class="link-item" data-index="${i}">
-                                        <div class="link-icon">${this.getLinkIcon(link.url)}</div>
-                                        <div class="link-info">
-                                            <input type="text" class="link-title" placeholder="Title" value="${link.title || ''}">
-                                            <input type="text" class="link-url" placeholder="https://..." value="${link.url || ''}">
-                                        </div>
-                                        <button class="btn btn-danger btn-sm remove-link" data-index="${i}">✕</button>
-                                    </div>
-                                `).join('')}
+                            <div id="folders-list">
+                                ${this.renderFoldersEditor()}
                             </div>
-                            <button class="btn btn-ghost btn-sm" id="add-link-btn" style="margin-top: 0.5rem;">+ Add Link</button>
+                            <div class="folder-actions">
+                                <button class="btn btn-ghost btn-sm" id="add-folder-btn"><span class="btn-icon">${this.icons.folder}</span> Add Folder</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -474,16 +467,14 @@ class App {
         document.getElementById('publish-toggle').onclick = () => this.togglePublish();
         document.getElementById('copy-url').onclick = () => this.copyUrl();
         document.getElementById('add-server-btn').onclick = () => this.addServerInput();
-        document.getElementById('add-link-btn').onclick = () => this.addLink();
+        document.getElementById('add-folder-btn').onclick = () => this.addFolder();
+        
+        // Bind folder actions
+        this.bindFolderActions();
         
         // Bind remove buttons
         document.querySelectorAll('.remove-server').forEach(btn => {
             btn.onclick = () => this.removeServerInput(parseInt(btn.dataset.index));
-        });
-        
-        // Bind link remove buttons
-        document.querySelectorAll('.remove-link').forEach(btn => {
-            btn.onclick = () => this.removeLink(parseInt(btn.dataset.index));
         });
 
         // Load Discord status
@@ -537,12 +528,28 @@ class App {
             .map(el => el.value.trim())
             .filter(v => v);
         
-        // Collect links
-        const linkItems = document.querySelectorAll('.link-item');
-        this.user.links = Array.from(linkItems).map(item => ({
-            title: item.querySelector('.link-title').value.trim(),
-            url: item.querySelector('.link-url').value.trim()
-        })).filter(l => l.url);
+        // Collect folders and their links
+        if (this.user.folders) {
+            this.user.folders.forEach((folder, fi) => {
+                // Update folder name
+                const nameInput = document.querySelector(`.folder-name[data-folder="${fi}"]`);
+                if (nameInput) folder.name = nameInput.value.trim() || 'Untitled';
+                
+                // Update links in folder
+                folder.links.forEach((link, li) => {
+                    const titleInput = document.querySelector(`.link-title[data-folder="${fi}"][data-link="${li}"]`);
+                    const urlInput = document.querySelector(`.link-url[data-folder="${fi}"][data-link="${li}"]`);
+                    if (titleInput) link.title = titleInput.value.trim();
+                    if (urlInput) link.url = urlInput.value.trim();
+                });
+                
+                // Remove empty links
+                folder.links = folder.links.filter(l => l.url);
+            });
+        }
+        
+        // Clear old links format
+        this.user.links = [];
 
         this.users[this.user.slug] = this.user;
         
@@ -655,7 +662,12 @@ class App {
         eyeOff: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`,
         trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
         checkCircle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
-        xCircle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
+        xCircle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+        folder: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
+        folderOpen: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M2 10h20"/></svg>`,
+        chevronDown: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
+        chevronRight: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+        plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`
     };
 
     getLinkIcon(url) {
@@ -678,49 +690,176 @@ class App {
         return this.icons.link;
     }
 
-    addLink() {
-        if (!this.user.links) this.user.links = [];
-        if (this.user.links.length >= 10) {
-            this.toast('Max 10 links allowed', 'warning');
+    addFolder() {
+        if (!this.user.folders) this.user.folders = [];
+        if (this.user.folders.length >= 10) {
+            this.toast('Max 10 folders allowed', 'warning');
             return;
         }
         
-        this.user.links.push({ title: '', url: '' });
-        this.refreshLinks();
-    }
-
-    removeLink(index) {
-        if (!this.user.links) return;
-        this.user.links.splice(index, 1);
-        this.refreshLinks();
-    }
-
-    refreshLinks() {
-        const container = document.getElementById('links-list');
+        const folderName = prompt('Enter folder name:');
+        if (!folderName || !folderName.trim()) return;
         
-        container.innerHTML = (this.user.links || []).map((link, i) => `
-            <div class="link-item" data-index="${i}">
-                <div class="link-icon">${this.getLinkIcon(link.url)}</div>
-                <div class="link-info">
-                    <input type="text" class="link-title" placeholder="Title" value="${link.title || ''}">
-                    <input type="text" class="link-url" placeholder="https://..." value="${link.url || ''}">
+        this.user.folders.push({ 
+            name: folderName.trim(), 
+            links: [],
+            expanded: true 
+        });
+        this.refreshFolders();
+    }
+
+    removeFolder(folderIndex) {
+        if (!this.user.folders) return;
+        if (!confirm('Delete this folder and all its links?')) return;
+        this.user.folders.splice(folderIndex, 1);
+        this.refreshFolders();
+    }
+
+    addLinkToFolder(folderIndex) {
+        if (!this.user.folders || !this.user.folders[folderIndex]) return;
+        if (this.user.folders[folderIndex].links.length >= 20) {
+            this.toast('Max 20 links per folder', 'warning');
+            return;
+        }
+        
+        this.user.folders[folderIndex].links.push({ title: '', url: '' });
+        this.refreshFolders();
+    }
+
+    removeLinkFromFolder(folderIndex, linkIndex) {
+        if (!this.user.folders || !this.user.folders[folderIndex]) return;
+        this.user.folders[folderIndex].links.splice(linkIndex, 1);
+        this.refreshFolders();
+    }
+
+    toggleFolder(folderIndex) {
+        if (!this.user.folders || !this.user.folders[folderIndex]) return;
+        this.user.folders[folderIndex].expanded = !this.user.folders[folderIndex].expanded;
+        this.refreshFolders();
+    }
+
+    renderFoldersEditor() {
+        if (!this.user.folders || this.user.folders.length === 0) {
+            // Migrate old links to a default folder if they exist
+            if (this.user.links && this.user.links.length > 0) {
+                this.user.folders = [{
+                    name: 'My Links',
+                    links: this.user.links,
+                    expanded: true
+                }];
+                this.user.links = []; // Clear old format
+            } else {
+                return '<p style="color: var(--text-dim); text-align: center; padding: 1rem;">No folders yet. Click "Add Folder" to create one.</p>';
+            }
+        }
+        
+        return this.user.folders.map((folder, fi) => `
+            <div class="folder-container" data-folder="${fi}">
+                <div class="folder-header ${folder.expanded ? 'expanded' : ''}">
+                    <div class="folder-toggle" data-folder="${fi}">
+                        <span class="folder-chevron">${folder.expanded ? this.icons.chevronDown : this.icons.chevronRight}</span>
+                        <span class="folder-icon">${folder.expanded ? this.icons.folderOpen : this.icons.folder}</span>
+                        <input type="text" class="folder-name" value="${folder.name}" data-folder="${fi}" placeholder="Folder name">
+                        <span class="folder-count">${folder.links.length} items</span>
+                    </div>
+                    <div class="folder-actions-inline">
+                        <button class="btn btn-ghost btn-sm add-link-to-folder" data-folder="${fi}" title="Add Link">
+                            <span class="btn-icon">${this.icons.plus}</span>
+                        </button>
+                        <button class="btn btn-danger btn-sm remove-folder" data-folder="${fi}" title="Delete Folder">
+                            <span class="btn-icon">${this.icons.trash}</span>
+                        </button>
+                    </div>
                 </div>
-                <button class="btn btn-danger btn-sm remove-link" data-index="${i}">✕</button>
+                <div class="folder-content ${folder.expanded ? 'expanded' : ''}">
+                    ${folder.links.length === 0 ? 
+                        '<p class="empty-folder">No links in this folder. Click + to add one.</p>' :
+                        folder.links.map((link, li) => `
+                            <div class="link-item" data-folder="${fi}" data-link="${li}">
+                                <div class="link-icon">${this.getLinkIcon(link.url)}</div>
+                                <div class="link-info">
+                                    <input type="text" class="link-title" placeholder="Title" value="${link.title || ''}" data-folder="${fi}" data-link="${li}">
+                                    <input type="text" class="link-url" placeholder="https://..." value="${link.url || ''}" data-folder="${fi}" data-link="${li}">
+                                </div>
+                                <button class="btn btn-danger btn-sm remove-link" data-folder="${fi}" data-link="${li}">✕</button>
+                            </div>
+                        `).join('')
+                    }
+                </div>
             </div>
         `).join('');
+    }
+
+    refreshFolders() {
+        const container = document.getElementById('folders-list');
+        if (!container) return;
         
-        // Rebind remove buttons
+        container.innerHTML = this.renderFoldersEditor();
+        this.bindFolderActions();
+    }
+
+    bindFolderActions() {
+        // Toggle folder expand/collapse
+        document.querySelectorAll('.folder-toggle').forEach(toggle => {
+            toggle.onclick = (e) => {
+                if (e.target.classList.contains('folder-name')) return; // Don't toggle when editing name
+                this.toggleFolder(parseInt(toggle.dataset.folder));
+            };
+        });
+        
+        // Folder name changes
+        document.querySelectorAll('.folder-name').forEach(input => {
+            input.onchange = () => {
+                const fi = parseInt(input.dataset.folder);
+                if (this.user.folders[fi]) {
+                    this.user.folders[fi].name = input.value.trim() || 'Untitled';
+                }
+            };
+            input.onclick = (e) => e.stopPropagation(); // Prevent toggle when clicking input
+        });
+        
+        // Add link to folder
+        document.querySelectorAll('.add-link-to-folder').forEach(btn => {
+            btn.onclick = () => this.addLinkToFolder(parseInt(btn.dataset.folder));
+        });
+        
+        // Remove folder
+        document.querySelectorAll('.remove-folder').forEach(btn => {
+            btn.onclick = () => this.removeFolder(parseInt(btn.dataset.folder));
+        });
+        
+        // Remove link from folder
         document.querySelectorAll('.remove-link').forEach(btn => {
-            btn.onclick = () => this.removeLink(parseInt(btn.dataset.index));
+            btn.onclick = () => this.removeLinkFromFolder(
+                parseInt(btn.dataset.folder),
+                parseInt(btn.dataset.link)
+            );
         });
         
         // Update icons on URL change
-        document.querySelectorAll('.link-url').forEach((input, i) => {
+        document.querySelectorAll('.link-url').forEach(input => {
             input.oninput = () => {
                 const icon = input.closest('.link-item').querySelector('.link-icon');
                 icon.innerHTML = this.getLinkIcon(input.value);
             };
         });
+    }
+
+    // Legacy methods for backward compatibility
+    addLink() {
+        if (!this.user.folders || this.user.folders.length === 0) {
+            this.addFolder();
+            return;
+        }
+        this.addLinkToFolder(0);
+    }
+
+    removeLink(index) {
+        // Legacy - not used with folders
+    }
+
+    refreshLinks() {
+        this.refreshFolders();
     }
 
     formatUrl(url) {
@@ -796,9 +935,47 @@ class App {
             </div>
         `);
 
-        // Load links
-        if (user.links && user.links.length > 0) {
-            const linksContainer = document.getElementById('p-links');
+        // Load folders/links
+        const linksContainer = document.getElementById('p-links');
+        
+        // Check for new folder format first, then legacy links
+        if (user.folders && user.folders.length > 0) {
+            linksContainer.innerHTML = user.folders.map(folder => `
+                <div class="profile-folder">
+                    <div class="profile-folder-header" data-folder-toggle>
+                        <span class="folder-icon">${this.icons.folder}</span>
+                        <h3>${folder.name}</h3>
+                        <span class="folder-count">${folder.links.length} items</span>
+                        <span class="folder-chevron">${this.icons.chevronDown}</span>
+                    </div>
+                    <div class="profile-folder-content expanded">
+                        <div class="links-grid">
+                            ${folder.links.map(link => `
+                                <a href="${link.url}" target="_blank" rel="noopener" class="profile-link-item">
+                                    <div class="link-icon">${this.getLinkIcon(link.url)}</div>
+                                    <div class="link-details">
+                                        <h4>${link.title || 'Untitled'}</h4>
+                                        <p>${this.formatUrl(link.url)}</p>
+                                    </div>
+                                    <div class="link-action">${this.getActionIcon(link.url)}</div>
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Bind folder toggles
+            document.querySelectorAll('.profile-folder-header').forEach(header => {
+                header.onclick = () => {
+                    const content = header.nextElementSibling;
+                    const chevron = header.querySelector('.folder-chevron');
+                    content.classList.toggle('expanded');
+                    chevron.innerHTML = content.classList.contains('expanded') ? this.icons.chevronDown : this.icons.chevronRight;
+                };
+            });
+        } else if (user.links && user.links.length > 0) {
+            // Legacy format - flat links
             linksContainer.innerHTML = `
                 <h3>Links & Files</h3>
                 <div class="links-grid">
