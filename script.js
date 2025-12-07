@@ -9,6 +9,7 @@ const CONFIG = {
     LANYARD_API: 'https://api.lanyard.rest/v1/users',
     DISCORD_INVITE: 'https://discord.com/api/v9/invites',
     OG_LIMIT: 30,
+    ADMIN_USERS: ['kiriko', 'snow'],
     SPECIAL_USERS: {
         'kiriko': { tag: 'Owner', tagClass: 'tag-owner' },
         'snow': { tag: 'Co-Founder', tagClass: 'tag-cofounder' }
@@ -233,6 +234,10 @@ class App {
         this.navigate('/');
     }
 
+    isAdmin() {
+        return this.user && CONFIG.ADMIN_USERS.includes(this.user.slug);
+    }
+
     // ==================== DISCORD API ====================
 
     async fetchDiscord(id) {
@@ -381,6 +386,7 @@ class App {
             <nav class="navbar">
                 <div class="logo">File<span>Share</span></div>
                 <div class="nav-links">
+                    ${this.isAdmin() ? '<button class="btn btn-ghost" id="admin-btn">Admin Panel</button>' : ''}
                     <button class="btn btn-ghost" id="view-profile-btn">View Profile</button>
                     <button class="btn btn-ghost" id="logout-btn">Logout</button>
                 </div>
@@ -488,6 +494,9 @@ class App {
 
         // Bind events
         document.getElementById('logout-btn').onclick = () => this.logout();
+        if (this.isAdmin()) {
+            document.getElementById('admin-btn').onclick = () => this.showAdminPanel();
+        }
         document.getElementById('view-profile-btn').onclick = () => {
             if (this.user.published) {
                 this.navigate('/' + this.user.slug);
@@ -892,6 +901,144 @@ class App {
             
             grid.innerHTML = serversHtml || '<p style="color: var(--text-dim);">No servers found</p>';
         }
+    }
+
+    // ==================== ADMIN PANEL ====================
+
+    async showAdminPanel() {
+        if (!this.isAdmin()) return this.showDashboard();
+        
+        await this.loadData();
+        const allUsers = Object.values(this.users).filter(u => !u._empty);
+        
+        this.render(`
+            <nav class="navbar">
+                <div class="logo">File<span>Share</span></div>
+                <div class="nav-links">
+                    <button class="btn btn-ghost" id="back-dashboard-btn">Back to Dashboard</button>
+                    <button class="btn btn-ghost" id="logout-btn">Logout</button>
+                </div>
+            </nav>
+            <main class="main">
+                <div class="admin-panel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Admin Panel - User Management</h3>
+                            <span class="admin-badge">👑 Admin Access</span>
+                        </div>
+                        <p style="color: var(--text-dim); margin-bottom: 1.5rem;">Manage all user accounts. You can unpublish profiles or terminate accounts.</p>
+                        
+                        <div class="admin-stats">
+                            <div class="stat-item">
+                                <span class="stat-value">${allUsers.length}</span>
+                                <span class="stat-label">Total Users</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">${allUsers.filter(u => u.published).length}</span>
+                                <span class="stat-label">Published</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">${allUsers.filter(u => !u.published).length}</span>
+                                <span class="stat-label">Unpublished</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>All Users</h3>
+                        </div>
+                        <div class="admin-user-list" id="admin-user-list">
+                            ${allUsers.map(u => this.renderAdminUserRow(u)).join('')}
+                        </div>
+                    </div>
+                </div>
+            </main>
+        `);
+        
+        // Bind events
+        document.getElementById('logout-btn').onclick = () => this.logout();
+        document.getElementById('back-dashboard-btn').onclick = () => this.showDashboard();
+        
+        // Bind user action buttons
+        this.bindAdminActions();
+    }
+
+    renderAdminUserRow(user) {
+        const isProtected = CONFIG.ADMIN_USERS.includes(user.slug);
+        const tagInfo = this.getUserTag(user.slug);
+        const tagHtml = tagInfo ? `<span class="user-tag ${tagInfo.tagClass}" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">${tagInfo.tag}</span>` : '';
+        
+        return `
+            <div class="admin-user-row" data-slug="${user.slug}">
+                <div class="admin-user-info">
+                    <div class="admin-user-avatar">${user.username.charAt(0).toUpperCase()}</div>
+                    <div class="admin-user-details">
+                        <div class="admin-user-name">
+                            ${user.username} ${tagHtml}
+                            ${isProtected ? '<span class="protected-badge">🛡️</span>' : ''}
+                        </div>
+                        <div class="admin-user-meta">
+                            <span class="status-indicator ${user.published ? 'published' : 'unpublished'}">
+                                ${user.published ? '🟢 Published' : '🔴 Unpublished'}
+                            </span>
+                            <span class="user-bio-preview">${user.bio ? user.bio.substring(0, 50) + (user.bio.length > 50 ? '...' : '') : 'No bio'}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-user-actions">
+                    ${!isProtected ? `
+                        <button class="btn btn-ghost btn-sm admin-toggle-publish" data-slug="${user.slug}" data-published="${user.published}">
+                            ${user.published ? 'Unpublish' : 'Publish'}
+                        </button>
+                        <button class="btn btn-danger btn-sm admin-terminate" data-slug="${user.slug}">
+                            Terminate
+                        </button>
+                    ` : '<span style="color: var(--text-muted); font-size: 0.8rem;">Protected</span>'}
+                </div>
+            </div>
+        `;
+    }
+
+    bindAdminActions() {
+        // Toggle publish buttons
+        document.querySelectorAll('.admin-toggle-publish').forEach(btn => {
+            btn.onclick = async () => {
+                const slug = btn.dataset.slug;
+                const isPublished = btn.dataset.published === 'true';
+                
+                await this.loadData();
+                if (this.users[slug]) {
+                    this.users[slug].published = !isPublished;
+                    if (await this.saveData()) {
+                        this.toast(`${slug} ${!isPublished ? 'published' : 'unpublished'}`, 'success');
+                        this.showAdminPanel();
+                    } else {
+                        this.toast('Failed to update', 'error');
+                    }
+                }
+            };
+        });
+        
+        // Terminate buttons
+        document.querySelectorAll('.admin-terminate').forEach(btn => {
+            btn.onclick = async () => {
+                const slug = btn.dataset.slug;
+                
+                if (!confirm(`Are you sure you want to TERMINATE the account "${slug}"? This cannot be undone!`)) return;
+                
+                await this.loadData();
+                if (this.users[slug]) {
+                    delete this.users[slug];
+                    if (await this.saveData()) {
+                        this.toast(`Account "${slug}" terminated`, 'success');
+                        this.showAdminPanel();
+                    } else {
+                        this.toast('Failed to terminate', 'error');
+                    }
+                }
+            };
+        });
     }
 
     // ==================== TOAST ====================
