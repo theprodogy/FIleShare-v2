@@ -714,6 +714,7 @@ body {
 .profile-folder-header .folder-icon {
     color: var(--accent);
     display: flex;
+    align-items: center;
 }
 
 .profile-folder-header .folder-icon svg {
@@ -729,16 +730,21 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--text-dim);
+    display: flex;
+    align-items: center;
 }
 
 .profile-folder-header .folder-count {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--text-dim);
+    display: flex;
+    align-items: center;
 }
 
 .profile-folder-header .folder-chevron {
     color: var(--text-dim);
     display: flex;
+    align-items: center;
     transition: transform 0.2s;
 }
 
@@ -1478,4 +1484,3 @@ body {
         flex: 1;
     }
 }
-
