@@ -504,6 +504,122 @@ body {
 }
 
 /* ===== LINK ITEMS (Editor) ===== */
+.folder-container {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.folder-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--bg-hover);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.folder-header:hover {
+    background: var(--bg-card);
+}
+
+.folder-header.expanded {
+    border-bottom-color: var(--accent);
+}
+
+.folder-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    cursor: pointer;
+}
+
+.folder-chevron {
+    display: flex;
+    align-items: center;
+    color: var(--text-dim);
+    transition: transform 0.2s;
+}
+
+.folder-chevron svg {
+    width: 16px;
+    height: 16px;
+}
+
+.folder-icon {
+    display: flex;
+    align-items: center;
+    color: var(--accent);
+}
+
+.folder-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.folder-name {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.25rem 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.folder-name:hover {
+    border-color: var(--border);
+    background: var(--bg-input);
+}
+
+.folder-name:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-input);
+}
+
+.folder-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+}
+
+.folder-actions-inline {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.folder-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.folder-content.expanded {
+    max-height: 2000px;
+    padding: 0.75rem;
+}
+
+.empty-folder {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.85rem;
+}
+
+.folder-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
 .link-item {
     display: flex;
     align-items: center;
@@ -570,6 +686,74 @@ body {
 /* ===== LINK ITEMS (Profile View) ===== */
 .profile-links {
     margin-bottom: 2rem;
+}
+
+.profile-folder {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.profile-folder-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-input);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.profile-folder-header:hover {
+    background: var(--bg-hover);
+}
+
+.profile-folder-header .folder-icon {
+    color: var(--accent);
+    display: flex;
+}
+
+.profile-folder-header .folder-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.profile-folder-header h3 {
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.profile-folder-header .folder-count {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}
+
+.profile-folder-header .folder-chevron {
+    color: var(--text-dim);
+    display: flex;
+    transition: transform 0.2s;
+}
+
+.profile-folder-header .folder-chevron svg {
+    width: 20px;
+    height: 20px;
+}
+
+.profile-folder-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.profile-folder-content.expanded {
+    max-height: 2000px;
+    padding: 0.75rem;
 }
 
 .profile-links h3 {
