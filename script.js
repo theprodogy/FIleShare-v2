@@ -733,7 +733,7 @@ class App {
         document.querySelectorAll('.link-url').forEach((input, i) => {
             input.oninput = () => {
                 const icon = input.closest('.link-item').querySelector('.link-icon');
-                icon.textContent = this.getLinkIcon(input.value);
+                icon.innerHTML = this.getLinkIcon(input.value);
             };
         });
     }
