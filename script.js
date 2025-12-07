@@ -494,8 +494,9 @@ class App {
 
         // Bind events
         document.getElementById('logout-btn').onclick = () => this.logout();
-        if (this.isAdmin()) {
-            document.getElementById('admin-btn').onclick = () => this.showAdminPanel();
+        const adminBtn = document.getElementById('admin-btn');
+        if (adminBtn) {
+            adminBtn.onclick = () => this.showAdminPanel();
         }
         document.getElementById('view-profile-btn').onclick = () => {
             if (this.user.published) {
