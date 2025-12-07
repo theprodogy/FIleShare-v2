@@ -751,18 +751,21 @@ class App {
     }
 
     renderFoldersEditor() {
+        // Migrate old links to a default folder if they exist
+        if ((!this.user.folders || this.user.folders.length === 0) && this.user.links && this.user.links.length > 0) {
+            this.user.folders = [{
+                name: 'My Links',
+                links: this.user.links,
+                expanded: true
+            }];
+            this.user.links = []; // Clear old format
+            // Auto-save the migration
+            this.users[this.user.slug] = this.user;
+            this.saveData();
+        }
+        
         if (!this.user.folders || this.user.folders.length === 0) {
-            // Migrate old links to a default folder if they exist
-            if (this.user.links && this.user.links.length > 0) {
-                this.user.folders = [{
-                    name: 'My Links',
-                    links: this.user.links,
-                    expanded: true
-                }];
-                this.user.links = []; // Clear old format
-            } else {
-                return '<p style="color: var(--text-dim); text-align: center; padding: 1rem;">No folders yet. Click "Add Folder" to create one.</p>';
-            }
+            return '<p style="color: var(--text-dim); text-align: center; padding: 1rem;">No folders yet. Click "Add Folder" to create one.</p>';
         }
         
         return this.user.folders.map((folder, fi) => `
@@ -950,9 +953,14 @@ class App {
         // Load folders/links
         const linksContainer = document.getElementById('p-links');
         
-        // Check for new folder format first, then legacy links
-        if (user.folders && user.folders.length > 0) {
-            linksContainer.innerHTML = user.folders.map(folder => `
+        // Migrate legacy links to folder format for display
+        let folders = user.folders || [];
+        if (folders.length === 0 && user.links && user.links.length > 0) {
+            folders = [{ name: 'Links', links: user.links, expanded: true }];
+        }
+        
+        if (folders.length > 0) {
+            linksContainer.innerHTML = folders.map(folder => `
                 <div class="profile-folder">
                     <div class="profile-folder-header" data-folder-toggle>
                         <span class="folder-icon">${this.icons.folder}</span>
@@ -986,23 +994,6 @@ class App {
                     chevron.innerHTML = content.classList.contains('expanded') ? this.icons.chevronDown : this.icons.chevronRight;
                 };
             });
-        } else if (user.links && user.links.length > 0) {
-            // Legacy format - flat links
-            linksContainer.innerHTML = `
-                <h3>Links & Files</h3>
-                <div class="links-grid">
-                    ${user.links.map(link => `
-                        <a href="${link.url}" target="_blank" rel="noopener" class="profile-link-item">
-                            <div class="link-icon">${this.getLinkIcon(link.url)}</div>
-                            <div class="link-details">
-                                <h4>${link.title || 'Untitled'}</h4>
-                                <p>${this.formatUrl(link.url)}</p>
-                            </div>
-                            <div class="link-action">${this.getActionIcon(link.url)}</div>
-                        </a>
-                    `).join('')}
-                </div>
-            `;
         }
 
         // Load Discord info
