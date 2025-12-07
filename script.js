@@ -562,7 +562,13 @@ class App {
     }
 
     async deleteAccount() {
-        if (!confirm('Are you sure you want to delete your account? This cannot be undone!')) return;
+        const confirmed = await this.confirmModal(
+            'Delete Account',
+            'Are you sure you want to delete your account? This action cannot be undone!',
+            'Delete Account',
+            true
+        );
+        if (!confirmed) return;
         
         const slugToDelete = this.user.slug;
         
@@ -690,27 +696,33 @@ class App {
         return this.icons.link;
     }
 
-    addFolder() {
+    async addFolder() {
         if (!this.user.folders) this.user.folders = [];
         if (this.user.folders.length >= 10) {
             this.toast('Max 10 folders allowed', 'warning');
             return;
         }
         
-        const folderName = prompt('Enter folder name:');
-        if (!folderName || !folderName.trim()) return;
+        const folderName = await this.promptModal('Create Folder', 'Folder Name', 'e.g. My Downloads');
+        if (!folderName) return;
         
         this.user.folders.push({ 
-            name: folderName.trim(), 
+            name: folderName, 
             links: [],
             expanded: true 
         });
         this.refreshFolders();
     }
 
-    removeFolder(folderIndex) {
+    async removeFolder(folderIndex) {
         if (!this.user.folders) return;
-        if (!confirm('Delete this folder and all its links?')) return;
+        const confirmed = await this.confirmModal(
+            'Delete Folder',
+            'Are you sure you want to delete this folder and all its links?',
+            'Delete',
+            true
+        );
+        if (!confirmed) return;
         this.user.folders.splice(folderIndex, 1);
         this.refreshFolders();
     }
@@ -1169,7 +1181,11 @@ class App {
         document.querySelectorAll('.admin-reset-password').forEach(btn => {
             btn.onclick = async () => {
                 const slug = btn.dataset.slug;
-                const newPassword = prompt(`Enter new password for "${slug}":\n(Min 4 characters)`);
+                const newPassword = await this.promptModal(
+                    `Reset Password`,
+                    `New password for "${slug}" (min 4 characters)`,
+                    'Enter new password'
+                );
                 
                 if (!newPassword) return;
                 if (newPassword.length < 4) {
@@ -1213,7 +1229,13 @@ class App {
             btn.onclick = async () => {
                 const slug = btn.dataset.slug;
                 
-                if (!confirm(`Are you sure you want to TERMINATE the account "${slug}"? This cannot be undone!`)) return;
+                const confirmed = await this.confirmModal(
+                    'Terminate Account',
+                    `Are you sure you want to TERMINATE the account "${slug}"? This action cannot be undone!`,
+                    'Terminate',
+                    true
+                );
+                if (!confirmed) return;
                 
                 await this.loadData();
                 if (this.users[slug]) {
@@ -1243,6 +1265,136 @@ class App {
             toast.style.animation = 'slideUp 0.3s ease reverse';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    }
+
+    // ==================== CUSTOM MODALS ====================
+
+    showModal({ title, message, inputLabel, inputPlaceholder, inputValue, confirmText, cancelText, danger, onConfirm }) {
+        // Remove any existing modal
+        document.querySelectorAll('.modal-overlay').forEach(m => m.remove());
+        
+        const hasInput = inputLabel !== undefined;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-card">
+                <h3 class="modal-title">${title}</h3>
+                ${message ? `<p class="modal-message">${message}</p>` : ''}
+                ${hasInput ? `
+                    <div class="modal-input-group">
+                        <label>${inputLabel}</label>
+                        <input type="text" id="modal-input" placeholder="${inputPlaceholder || ''}" value="${inputValue || ''}" autocomplete="off">
+                    </div>
+                ` : ''}
+                <div class="modal-actions">
+                    <button class="btn btn-ghost" id="modal-cancel">${cancelText || 'Cancel'}</button>
+                    <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" id="modal-confirm">${confirmText || 'Confirm'}</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Focus input if present
+        const input = document.getElementById('modal-input');
+        if (input) {
+            input.focus();
+            input.select();
+        }
+        
+        // Handle confirm
+        const handleConfirm = () => {
+            const value = input ? input.value : true;
+            modal.remove();
+            if (onConfirm) onConfirm(value);
+        };
+        
+        // Handle cancel
+        const handleCancel = () => {
+            modal.remove();
+        };
+        
+        document.getElementById('modal-confirm').onclick = handleConfirm;
+        document.getElementById('modal-cancel').onclick = handleCancel;
+        
+        // Close on overlay click
+        modal.onclick = (e) => {
+            if (e.target === modal) handleCancel();
+        };
+        
+        // Handle enter key
+        if (input) {
+            input.onkeypress = (e) => {
+                if (e.key === 'Enter') handleConfirm();
+            };
+        }
+        
+        // Handle escape key
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                handleCancel();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+
+    // Promise-based modal helpers
+    promptModal(title, inputLabel, inputPlaceholder = '', inputValue = '') {
+        return new Promise((resolve) => {
+            this.showModal({
+                title,
+                inputLabel,
+                inputPlaceholder,
+                inputValue,
+                confirmText: 'OK',
+                onConfirm: (value) => resolve(value && value.trim() ? value.trim() : null)
+            });
+            
+            // Handle cancel by clicking outside or pressing cancel
+            const overlay = document.querySelector('.modal-overlay');
+            const cancelBtn = document.getElementById('modal-cancel');
+            const origCancel = cancelBtn.onclick;
+            cancelBtn.onclick = () => {
+                origCancel();
+                resolve(null);
+            };
+            overlay.onclick = (e) => {
+                if (e.target === overlay) {
+                    overlay.remove();
+                    resolve(null);
+                }
+            };
+        });
+    }
+
+    confirmModal(title, message, confirmText = 'Confirm', danger = false) {
+        return new Promise((resolve) => {
+            this.showModal({
+                title,
+                message,
+                confirmText,
+                cancelText: 'Cancel',
+                danger,
+                onConfirm: () => resolve(true)
+            });
+            
+            // Handle cancel
+            const overlay = document.querySelector('.modal-overlay');
+            const cancelBtn = document.getElementById('modal-cancel');
+            const origCancel = cancelBtn.onclick;
+            cancelBtn.onclick = () => {
+                origCancel();
+                resolve(false);
+            };
+            overlay.onclick = (e) => {
+                if (e.target === overlay) {
+                    overlay.remove();
+                    resolve(false);
+                }
+            };
+        });
     }
 }
 
