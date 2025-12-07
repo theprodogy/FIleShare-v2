@@ -810,7 +810,7 @@ body {
 .profile-link-item .link-details {
     flex: 1;
     min-width: 0;
-    text-align: center;
+    text-align: left;
 }
 
 .profile-link-item .link-details h4 {
@@ -1477,3 +1477,4 @@ body {
         flex: 1;
     }
 }
+
