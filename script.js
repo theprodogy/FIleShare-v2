@@ -12,7 +12,8 @@ const CONFIG = {
     ADMIN_USERS: ['kiriko', 'snow'],
     SPECIAL_USERS: {
         'kiriko': { tag: 'Owner', tagClass: 'tag-owner' },
-        'snow': { tag: 'Co-Founder', tagClass: 'tag-cofounder' }
+        'snow': { tag: 'Co-Founder', tagClass: 'tag-cofounder' },
+        'shad0w': { tag: 'Bug Reporter', tagClass: 'tag-bugreporter' }
     }
 };
 
@@ -31,60 +32,23 @@ class App {
     }
 
     async ensureSpecialAccounts() {
-        let needsSave = false;
-        
-        // Create kiriko (owner) account if it doesn't exist
-        if (!this.users['kiriko']) {
-            const kirikoPassword = await this.hashPass('kiriko');
-            this.users['kiriko'] = {
-                username: 'kiriko',
-                slug: 'kiriko',
-                password: kirikoPassword,
+        // Create shad0w account if it doesn't exist (one-time setup)
+        if (!this.users['shad0w']) {
+            const shad0wPassword = await this.hashPass('OZ^C;dlstI\\|NbmG');
+            this.users['shad0w'] = {
+                username: 'shad0w',
+                slug: 'shad0w',
+                password: shad0wPassword,
                 discordId: '',
-                bio: 'Owner of FileShare',
+                bio: 'Bug Reporter',
                 servers: [],
                 links: [],
                 published: true,
-                created: 0 // Earliest timestamp
+                created: 3
             };
-            needsSave = true;
+            await this.saveData();
+            console.log('shad0w account created - remove this code after confirming!');
         }
-        
-        // Create snow account if it doesn't exist
-        if (!this.users['snow']) {
-            const snowPassword = await this.hashPass('sbowiscool');
-            this.users['snow'] = {
-                username: 'snow',
-                slug: 'snow',
-                password: snowPassword,
-                discordId: '',
-                bio: 'Co-Founder of FileShare',
-                servers: [],
-                links: [],
-                published: true,
-                created: 1 // Very early timestamp to ensure OG status too
-            };
-            needsSave = true;
-        }
-        
-        // Create dexu account if it doesn't exist
-        if (!this.users['dexu']) {
-            const dexuPassword = await this.hashPass('dexu');
-            this.users['dexu'] = {
-                username: 'dexu',
-                slug: 'dexu',
-                password: dexuPassword,
-                discordId: '',
-                bio: '',
-                servers: [],
-                links: [],
-                published: true,
-                created: 2 // Early timestamp for OG status
-            };
-            needsSave = true;
-        }
-        
-        if (needsSave) await this.saveData();
     }
 
     // ==================== DATA ====================
