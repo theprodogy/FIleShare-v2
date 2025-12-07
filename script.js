@@ -644,7 +644,18 @@ class App {
         video: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
         download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
         drive: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.71 3.5L1.15 15l4.58 6.5h2.86l-4.57-6.5L9.58 5.5H7.71zm8.58 0L3.77 21.5h2.86l12.52-18H16.29zm.91 6.5l-5.43 9.5h10.86l-5.43-9.5z"/></svg>`,
-        pixeldrain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`
+        pixeldrain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+        // Admin icons
+        crown: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l3.22 3.22 4.28-.56-.56 4.28L22 12l-3.06 3.06.56 4.28-4.28-.56L12 22l-3.22-3.22-4.28.56.56-4.28L2 12l3.06-3.06-.56-4.28 4.28.56L12 1z"/></svg>`,
+        shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+        userCheck: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>`,
+        userX: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>`,
+        key: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`,
+        eye: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+        eyeOff: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`,
+        trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+        checkCircle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+        xCircle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
     };
 
     getLinkIcon(url) {
@@ -890,9 +901,9 @@ class App {
                     <div class="card">
                         <div class="card-header">
                             <h3>Admin Panel - User Management</h3>
-                            <span class="admin-badge">👑 Admin Access</span>
+                            <span class="admin-badge"><span class="admin-icon">${this.icons.crown}</span> Admin Access</span>
                         </div>
-                        <p style="color: var(--text-dim); margin-bottom: 1.5rem;">Manage all user accounts. You can unpublish profiles or terminate accounts.</p>
+                        <p style="color: var(--text-dim); margin-bottom: 1.5rem;">Manage all user accounts. You can reset passwords, unpublish profiles, or terminate accounts.</p>
                         
                         <div class="admin-stats">
                             <div class="stat-item">
@@ -945,31 +956,62 @@ class App {
                     <div class="admin-user-details">
                         <div class="admin-user-name">
                             ${user.username} ${tagHtml}
-                            ${isProtected ? '<span class="protected-badge">🛡️</span>' : ''}
+                            ${isProtected ? `<span class="protected-badge" title="Protected Account">${this.icons.shield}</span>` : ''}
                         </div>
                         <div class="admin-user-meta">
                             <span class="status-indicator ${user.published ? 'published' : 'unpublished'}">
-                                ${user.published ? '🟢 Published' : '🔴 Unpublished'}
+                                <span class="status-icon">${user.published ? this.icons.checkCircle : this.icons.xCircle}</span>
+                                ${user.published ? 'Published' : 'Unpublished'}
                             </span>
                             <span class="user-bio-preview">${user.bio ? user.bio.substring(0, 50) + (user.bio.length > 50 ? '...' : '') : 'No bio'}</span>
                         </div>
                     </div>
                 </div>
                 <div class="admin-user-actions">
+                    <button class="btn btn-warning btn-sm admin-reset-password" data-slug="${user.slug}" title="Reset Password">
+                        <span class="btn-icon">${this.icons.key}</span>
+                        <span class="btn-text">Reset PW</span>
+                    </button>
                     ${!isProtected ? `
-                        <button class="btn btn-ghost btn-sm admin-toggle-publish" data-slug="${user.slug}" data-published="${user.published}">
-                            ${user.published ? 'Unpublish' : 'Publish'}
+                        <button class="btn btn-ghost btn-sm admin-toggle-publish" data-slug="${user.slug}" data-published="${user.published}" title="${user.published ? 'Unpublish' : 'Publish'}">
+                            <span class="btn-icon">${user.published ? this.icons.eyeOff : this.icons.eye}</span>
+                            <span class="btn-text">${user.published ? 'Unpublish' : 'Publish'}</span>
                         </button>
-                        <button class="btn btn-danger btn-sm admin-terminate" data-slug="${user.slug}">
-                            Terminate
+                        <button class="btn btn-danger btn-sm admin-terminate" data-slug="${user.slug}" title="Terminate Account">
+                            <span class="btn-icon">${this.icons.trash}</span>
+                            <span class="btn-text">Terminate</span>
                         </button>
-                    ` : '<span style="color: var(--text-muted); font-size: 0.8rem;">Protected</span>'}
+                    ` : `<span class="protected-label"><span class="btn-icon">${this.icons.shield}</span> Protected</span>`}
                 </div>
             </div>
         `;
     }
 
     bindAdminActions() {
+        // Password reset buttons
+        document.querySelectorAll('.admin-reset-password').forEach(btn => {
+            btn.onclick = async () => {
+                const slug = btn.dataset.slug;
+                const newPassword = prompt(`Enter new password for "${slug}":\n(Min 4 characters)`);
+                
+                if (!newPassword) return;
+                if (newPassword.length < 4) {
+                    this.toast('Password must be at least 4 characters', 'error');
+                    return;
+                }
+                
+                await this.loadData();
+                if (this.users[slug]) {
+                    this.users[slug].password = await this.hashPass(newPassword);
+                    if (await this.saveData()) {
+                        this.toast(`Password reset for "${slug}"`, 'success');
+                    } else {
+                        this.toast('Failed to reset password', 'error');
+                    }
+                }
+            };
+        });
+        
         // Toggle publish buttons
         document.querySelectorAll('.admin-toggle-publish').forEach(btn => {
             btn.onclick = async () => {
