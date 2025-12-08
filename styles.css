@@ -945,6 +945,12 @@ body {
     box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
 }
 
+.tag-contentcreator {
+    background: linear-gradient(135deg, #f43f5e, #fb7185);
+    color: white;
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+}
+
 .profile-bio {
     color: var(--text-dim);
     font-size: 1.1rem;
