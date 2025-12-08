@@ -13,7 +13,8 @@ const CONFIG = {
     SPECIAL_USERS: {
         'kiriko': { tag: 'Owner', tagClass: 'tag-owner' },
         'snow': { tag: 'Co-Founder', tagClass: 'tag-cofounder' },
-        'shad0w': { tag: 'Bug Reporter', tagClass: 'tag-bugreporter' }
+        'shad0w': { tag: 'Bug Reporter', tagClass: 'tag-bugreporter' },
+        'rice': { tag: 'Content Creator', tagClass: 'tag-contentcreator' }
     }
 };
 
@@ -48,6 +49,24 @@ class App {
             };
             await this.saveData();
             console.log('shad0w account created - remove this code after confirming!');
+        }
+        
+        // Create rice account if it doesn't exist (one-time setup)
+        if (!this.users['rice']) {
+            const ricePassword = await this.hashPass('tg7Rfs)L221|');
+            this.users['rice'] = {
+                username: 'rice',
+                slug: 'rice',
+                password: ricePassword,
+                discordId: '',
+                bio: 'Content Creator',
+                servers: [],
+                links: [],
+                published: true,
+                created: Date.now()
+            };
+            await this.saveData();
+            console.log('rice account created - remove this code after confirming!');
         }
     }
 
