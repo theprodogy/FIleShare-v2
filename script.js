@@ -1,5 +1,5 @@
 /**
- * FileShare - Dynamic Profile Website
+ * Linkspace - Modern Link Hub
  * Features: JSONBin storage, Discord Lanyard API, Server Invites
  */
 
@@ -157,10 +157,20 @@ class App {
         return null;
     }
 
+    // Tag icons for Discord-style badges
+    tagIcons = {
+        'tag-og': `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>`,
+        'tag-owner': `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/></svg>`,
+        'tag-cofounder': `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L9 9L1 12L9 15L12 23L15 15L23 12L15 9L12 1Z"/></svg>`,
+        'tag-bugreporter': `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 12H10V10H14V12M14 16H10V14H14V16M20 8H17.19C16.74 7.22 16.12 6.55 15.37 6.04L17 4.41L15.59 3L13.42 5.17C12.96 5.06 12.5 5 12 5S11.04 5.06 10.59 5.17L8.41 3L7 4.41L8.62 6.04C7.88 6.55 7.26 7.22 6.81 8H4V10H6.09C6.04 10.33 6 10.66 6 11V12H4V14H6V15C6 15.34 6.04 15.67 6.09 16H4V18H6.81C7.85 19.79 9.78 21 12 21S16.15 19.79 17.19 18H20V16H17.91C17.96 15.67 18 15.34 18 15V14H20V12H18V11C18 10.66 17.96 10.33 17.91 10H20V8Z"/></svg>`,
+        'tag-contentcreator': `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7C17 6.45 16.55 6 16 6H4C3.45 6 3 6.45 3 7V17C3 17.55 3.45 18 4 18H16C16.55 18 17 17.55 17 17V13.5L21 17.5V6.5L17 10.5Z"/></svg>`
+    };
+
     renderTag(slug) {
         const tagInfo = this.getUserTag(slug);
         if (!tagInfo) return '';
-        return `<span class="user-tag ${tagInfo.tagClass}">${tagInfo.tag}</span>`;
+        const icon = this.tagIcons[tagInfo.tagClass] || '';
+        return `<span class="tag ${tagInfo.tagClass}">${icon}${tagInfo.tag}</span>`;
     }
 
     async register(username, password, discordId) {
@@ -260,17 +270,17 @@ class App {
     }
 
     showAuth() {
-        let isLogin = false;
+        let isLogin = true;
 
         const renderForm = () => {
             this.render(`
                 <nav class="navbar">
-                    <div class="logo">File<span>Share</span></div>
+                    <div class="logo">Link<span>space</span></div>
                 </nav>
                 <div class="auth-page">
                     <div class="auth-card">
                         <h2>${isLogin ? 'Welcome back' : 'Create account'}</h2>
-                        <p class="subtitle">${isLogin ? 'Sign in to continue' : 'Join FileShare today'}</p>
+                        <p class="subtitle">${isLogin ? 'Sign in to continue' : 'Join Linkspace today'}</p>
                         
                         <div class="form-group">
                             <label>Username</label>
@@ -282,20 +292,18 @@ class App {
                             <input type="password" id="f-pass" placeholder="Enter password">
                         </div>
                         
-                        <div class="form-group ${isLogin ? 'hidden' : ''}">
+                        <div class="form-group" id="discord-group" style="${isLogin ? 'display:none' : ''}">
                             <label>Discord ID (optional)</label>
                             <input type="text" id="f-discord" placeholder="e.g. 123456789012345678">
                         </div>
                         
-                        <div class="form-actions">
-                            <button class="btn btn-primary" id="auth-btn">
-                                ${isLogin ? 'Sign In' : 'Create Account'}
-                            </button>
-                        </div>
+                        <button class="btn btn-primary" id="auth-btn">
+                            ${isLogin ? 'Sign In' : 'Create Account'}
+                        </button>
                         
                         <div class="form-footer">
                             ${isLogin ? "Don't have an account?" : 'Already have an account?'}
-                            <a id="toggle-auth">${isLogin ? 'Sign up' : 'Sign in'}</a>
+                            <a href="#" id="toggle-auth">${isLogin ? 'Sign up' : 'Sign in'}</a>
                         </div>
                         
                         <div class="profiles-section" id="profiles-section"></div>
@@ -303,28 +311,29 @@ class App {
                 </div>
             `);
 
-            document.getElementById('auth-btn').onclick = () => {
+            document.getElementById('auth-btn').addEventListener('click', async () => {
                 const user = document.getElementById('f-user').value.trim();
                 const pass = document.getElementById('f-pass').value;
                 const discord = document.getElementById('f-discord')?.value.trim() || '';
                 
                 if (isLogin) {
-                    this.login(user, pass);
+                    await this.login(user, pass);
                 } else {
-                    this.register(user, pass, discord);
+                    await this.register(user, pass, discord);
                 }
-            };
+            });
 
-            document.getElementById('toggle-auth').onclick = () => {
+            document.getElementById('toggle-auth').addEventListener('click', (e) => {
+                e.preventDefault();
                 isLogin = !isLogin;
                 renderForm();
-            };
+            });
 
             // Enter key support
-            document.querySelectorAll('input').forEach(input => {
-                input.onkeypress = e => {
+            document.querySelectorAll('#f-user, #f-pass, #f-discord').forEach(input => {
+                input.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') document.getElementById('auth-btn').click();
-                };
+                });
             });
 
             this.renderPublicProfiles();
@@ -333,7 +342,7 @@ class App {
         renderForm();
     }
 
-    renderPublicProfiles() {
+    async renderPublicProfiles() {
         const section = document.getElementById('profiles-section');
         const published = Object.values(this.users).filter(u => u.published);
 
@@ -342,22 +351,40 @@ class App {
             return;
         }
 
+        // Fetch Discord avatars for users with Discord IDs
+        const profilesWithAvatars = await Promise.all(published.map(async u => {
+            let avatarUrl = null;
+            if (u.discordId) {
+                try {
+                    const res = await fetch(`${CONFIG.LANYARD_API}/${u.discordId}`);
+                    const data = await res.json();
+                    if (data.success && data.data.discord_user?.avatar) {
+                        avatarUrl = `https://cdn.discordapp.com/avatars/${u.discordId}/${data.data.discord_user.avatar}.png?size=64`;
+                    }
+                } catch (e) {}
+            }
+            return { ...u, avatarUrl };
+        }));
+
         section.innerHTML = `
             <h3>Public Profiles</h3>
             <div class="profiles-list">
-                ${published.map(u => `
-                    <div class="profile-link" data-slug="${u.slug}">
-                        <div class="profile-link-avatar">${u.username.charAt(0).toUpperCase()}</div>
-                        <div class="profile-link-info">
-                            <h4>${u.username}</h4>
-                            <p>${u.bio ? u.bio.substring(0, 30) + '...' : 'No bio'}</p>
+                ${profilesWithAvatars.map(u => `
+                    <div class="profile-item" data-slug="${u.slug}">
+                        ${u.avatarUrl 
+                            ? `<img class="profile-item-avatar" src="${u.avatarUrl}" alt="">`
+                            : `<div class="profile-item-avatar">${u.username.charAt(0).toUpperCase()}</div>`
+                        }
+                        <div class="profile-item-info">
+                            <span class="profile-item-name">${u.username}</span>
+                            <span class="profile-item-bio">${u.bio ? u.bio.substring(0, 25) + '...' : 'No bio'}</span>
                         </div>
                     </div>
                 `).join('')}
             </div>
         `;
 
-        section.querySelectorAll('.profile-link').forEach(el => {
+        section.querySelectorAll('.profile-item').forEach(el => {
             el.onclick = () => this.navigate('/' + el.dataset.slug);
         });
     }
@@ -367,7 +394,7 @@ class App {
 
         this.render(`
             <nav class="navbar">
-                <div class="logo">File<span>Share</span></div>
+                <div class="logo">Link<span>space</span></div>
                 <div class="nav-links">
                     ${this.isAdmin() ? '<button class="btn btn-ghost" id="admin-btn">Admin Panel</button>' : ''}
                     <button class="btn btn-ghost" id="view-profile-btn">View Profile</button>
@@ -377,23 +404,20 @@ class App {
             <main class="main">
                 <div class="dashboard">
                     <aside class="sidebar">
-                        <div class="user-info">
+                        <div class="sidebar-card">
                             <div class="user-avatar" id="user-avatar">${this.user.username.charAt(0).toUpperCase()}</div>
-                            <div class="user-name" id="user-name">${this.user.username}</div>
-                            <div class="user-status" id="user-status">
-                                <span class="status-dot offline"></span>
-                                <span>Offline</span>
+                            <div class="user-details">
+                                <h3 id="user-name">${this.user.username}</h3>
+                                <div class="user-status" id="user-status">
+                                    <span class="status-dot offline"></span>
+                                    <span>Offline</span>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="sidebar-section">
-                            <h3>Actions</h3>
-                            <button class="btn btn-primary" id="save-btn">Save Changes</button>
-                        </div>
-                        
-                        <div class="sidebar-section">
-                            <h3>Danger Zone</h3>
-                            <button class="btn btn-danger btn-sm" id="delete-btn">Delete Account</button>
+                        <div class="sidebar-actions">
+                            <button class="btn btn-primary btn-full" id="save-btn">Save Changes</button>
+                            <button class="btn btn-danger btn-full" id="delete-btn">Delete Account</button>
                         </div>
                     </aside>
                     
@@ -402,26 +426,30 @@ class App {
                             <div class="card-header">
                                 <h3>Profile Settings</h3>
                             </div>
-                            
-                            <div class="toggle-row">
-                                <div>
-                                    <div class="toggle-label">Publish Profile</div>
-                                    <div class="toggle-desc">Make your profile visible to everyone</div>
+                            <div class="card-body">
+                                <div class="toggle-row">
+                                    <div class="toggle-info">
+                                        <h4>Publish Profile</h4>
+                                        <p>Make your profile visible to everyone</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="publish-toggle" ${this.user.published ? 'checked' : ''}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
-                                <div class="toggle ${this.user.published ? 'active' : ''}" id="publish-toggle"></div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Profile URL</label>
-                                <div class="url-box">
-                                    <input type="text" id="profile-url" readonly value="${this.user.published ? location.origin + '/' + this.user.slug : 'Publish to get URL'}">
-                                    <button class="btn btn-ghost btn-sm" id="copy-url">Copy</button>
+                                
+                                <div class="form-group">
+                                    <label>Profile URL</label>
+                                    <div class="url-box">
+                                        <code id="profile-url">${this.user.published ? location.origin + '/' + this.user.slug : 'Publish to get URL'}</code>
+                                        <button class="btn btn-ghost btn-small" id="copy-url">Copy</button>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Bio</label>
-                                <textarea id="edit-bio" placeholder="Write something about yourself...">${this.user.bio || ''}</textarea>
+                                
+                                <div class="form-group">
+                                    <label>Bio</label>
+                                    <textarea id="edit-bio" rows="3" placeholder="Write something about yourself...">${this.user.bio || ''}</textarea>
+                                </div>
                             </div>
                         </div>
                         
@@ -429,37 +457,55 @@ class App {
                             <div class="card-header">
                                 <h3>Discord Integration</h3>
                             </div>
-                            
-                            <div class="form-group">
-                                <label>Discord User ID</label>
-                                <input type="text" id="edit-discord" placeholder="Your Discord user ID" value="${this.user.discordId || ''}">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Server Invite Codes (up to 5)</label>
-                                <div id="server-inputs">
-                                    ${(this.user.servers || []).map((code, i) => `
-                                        <div class="input-with-btn">
-                                            <input type="text" class="server-code" placeholder="Invite code" value="${code}">
-                                            <button class="btn btn-danger btn-sm remove-server" data-index="${i}">✕</button>
-                                        </div>
-                                    `).join('')}
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>Discord User ID</label>
+                                    <input type="text" id="edit-discord" placeholder="Your Discord user ID" value="${this.user.discordId || ''}">
                                 </div>
-                                <button class="btn btn-ghost btn-sm" id="add-server-btn" ${(this.user.servers?.length || 0) >= 5 ? 'disabled' : ''}>+ Add Server</button>
+                                
+                                <div class="form-group">
+                                    <label>Server Invite Codes (up to 5)</label>
+                                    <div class="server-inputs" id="server-inputs">
+                                        ${(this.user.servers || []).map((code, i) => `
+                                            <div class="input-row">
+                                                <input type="text" class="server-code" placeholder="Invite code" value="${code}">
+                                                <button class="btn btn-danger btn-small remove-server" data-index="${i}">✕</button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <button class="btn btn-secondary btn-small" id="add-server-btn" ${(this.user.servers?.length || 0) >= 5 ? 'disabled' : ''}>+ Add Server</button>
+                                </div>
                             </div>
                         </div>
                         
                         <div class="card">
                             <div class="card-header">
-                                <h3>Links & Files</h3>
+                                <h3>Links</h3>
+                                <button class="btn btn-primary btn-small" id="add-link-btn">${this.icons.plus} Add Link</button>
                             </div>
-                            
-                            <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1rem;">Add links to your profile. Supports YouTube, GitHub, Discord, and more.</p>
-                            
-                            <div id="links-list">
-                                ${this.renderLinksEditor()}
+                            <div class="card-body">
+                                <div class="links-supported">
+                                    <span class="supported-label">Supported:</span>
+                                    <div class="supported-icons">
+                                        <span class="supported-icon" title="YouTube">${this.icons.youtube}</span>
+                                        <span class="supported-icon" title="GitHub">${this.icons.github}</span>
+                                        <span class="supported-icon" title="Discord">${this.icons.discord}</span>
+                                        <span class="supported-icon" title="Twitter/X">${this.icons.twitter}</span>
+                                        <span class="supported-icon" title="Instagram">${this.icons.instagram}</span>
+                                        <span class="supported-icon" title="TikTok">${this.icons.tiktok}</span>
+                                        <span class="supported-icon" title="Twitch">${this.icons.twitch}</span>
+                                        <span class="supported-icon" title="Spotify">${this.icons.spotify}</span>
+                                        <span class="supported-icon" title="Roblox">${this.icons.roblox}</span>
+                                        <span class="supported-icon" title="Steam">${this.icons.steam}</span>
+                                        <span class="supported-icon" title="Reddit">${this.icons.reddit}</span>
+                                        <span class="supported-icon" title="Google Drive">${this.icons.drive}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="links-editor" id="links-list">
+                                    ${this.renderLinksEditor()}
+                                </div>
                             </div>
-                            <button class="btn btn-ghost btn-sm" id="add-link-btn" style="margin-top: 0.5rem;"><span class="btn-icon">${this.icons.plus}</span> Add Link</button>
                         </div>
                     </div>
                 </div>
@@ -467,31 +513,31 @@ class App {
         `);
 
         // Bind events
-        document.getElementById('logout-btn').onclick = () => this.logout();
+        document.getElementById('logout-btn').addEventListener('click', () => this.logout());
         const adminBtn = document.getElementById('admin-btn');
         if (adminBtn) {
-            adminBtn.onclick = () => this.showAdminPanel();
+            adminBtn.addEventListener('click', () => this.showAdminPanel());
         }
-        document.getElementById('view-profile-btn').onclick = () => {
+        document.getElementById('view-profile-btn').addEventListener('click', () => {
             if (this.user.published) {
                 this.navigate('/' + this.user.slug);
             } else {
                 this.toast('Publish your profile first', 'warning');
             }
-        };
-        document.getElementById('save-btn').onclick = () => this.saveProfile();
-        document.getElementById('delete-btn').onclick = () => this.deleteAccount();
-        document.getElementById('publish-toggle').onclick = () => this.togglePublish();
-        document.getElementById('copy-url').onclick = () => this.copyUrl();
-        document.getElementById('add-server-btn').onclick = () => this.addServerInput();
-        document.getElementById('add-link-btn').onclick = () => this.addLink();
+        });
+        document.getElementById('save-btn').addEventListener('click', () => this.saveProfile());
+        document.getElementById('delete-btn').addEventListener('click', () => this.deleteAccount());
+        document.getElementById('publish-toggle').addEventListener('change', (e) => this.togglePublish(e.target.checked));
+        document.getElementById('copy-url').addEventListener('click', () => this.copyUrl());
+        document.getElementById('add-server-btn').addEventListener('click', () => this.addServerInput());
+        document.getElementById('add-link-btn').addEventListener('click', () => this.addLink());
         
         // Bind link actions
         this.bindLinkActions();
         
         // Bind remove buttons
         document.querySelectorAll('.remove-server').forEach(btn => {
-            btn.onclick = () => this.removeServerInput(parseInt(btn.dataset.index));
+            btn.addEventListener('click', () => this.removeServerInput(parseInt(btn.dataset.index)));
         });
 
         // Load Discord status
@@ -523,14 +569,11 @@ class App {
         status.innerHTML = `<span class="status-dot ${s}"></span><span>${labels[s]}</span>`;
     }
 
-    async togglePublish() {
-        this.user.published = !this.user.published;
+    async togglePublish(checked) {
+        this.user.published = checked;
         
-        const toggle = document.getElementById('publish-toggle');
-        const urlInput = document.getElementById('profile-url');
-        
-        toggle.classList.toggle('active', this.user.published);
-        urlInput.value = this.user.published ? location.origin + '/' + this.user.slug : 'Publish to get URL';
+        const urlEl = document.getElementById('profile-url');
+        urlEl.textContent = this.user.published ? location.origin + '/' + this.user.slug : 'Publish to get URL';
 
         this.users[this.user.slug] = this.user;
         if (await this.saveData()) {
@@ -665,6 +708,9 @@ class App {
         download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
         drive: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.71 3.5L1.15 15l4.58 6.5h2.86l-4.57-6.5L9.58 5.5H7.71zm8.58 0L3.77 21.5h2.86l12.52-18H16.29zm.91 6.5l-5.43 9.5h10.86l-5.43-9.5z"/></svg>`,
         pixeldrain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+        roblox: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.164 0L.16 18.928 18.836 24l5.004-18.928L5.164 0zm9.086 14.727l-4.877-1.288 1.288-4.877 4.877 1.288-1.288 4.877z"/></svg>`,
+        steam: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.253 0-2.265-1.014-2.265-2.265z"/></svg>`,
+        reddit: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>`,
         // Admin icons
         crown: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l3.22 3.22 4.28-.56-.56 4.28L22 12l-3.06 3.06.56 4.28-4.28-.56L12 22l-3.22-3.22-4.28.56.56-4.28L2 12l3.06-3.06-.56-4.28 4.28.56L12 1z"/></svg>`,
         shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
@@ -686,6 +732,9 @@ class App {
     getLinkIcon(url) {
         if (!url) return this.icons.link;
         const u = url.toLowerCase();
+        if (u.includes('roblox') || u.includes('rblx')) return this.icons.roblox;
+        if (u.includes('steam') || u.includes('steampowered')) return this.icons.steam;
+        if (u.includes('reddit')) return this.icons.reddit;
         if (u.includes('pixeldrain')) return this.icons.download;
         if (u.includes('drive.google') || u.includes('docs.google')) return this.icons.drive;
         if (u.includes('github')) return this.icons.github;
@@ -739,17 +788,23 @@ class App {
         }
         
         if (!this.user.links || this.user.links.length === 0) {
-            return '<p style="color: var(--text-dim); text-align: center; padding: 1rem;">No links yet. Click "Add Link" to create one.</p>';
+            return `
+                <div class="links-empty">
+                    <div class="links-empty-icon">${this.icons.link}</div>
+                    <p>No links added yet</p>
+                    <span>Click "Add Link" to get started</span>
+                </div>
+            `;
         }
         
         return this.user.links.map((link, i) => `
-            <div class="link-item" data-index="${i}">
-                <div class="link-icon">${this.getLinkIcon(link.url)}</div>
-                <div class="link-info">
-                    <input type="text" class="link-title" placeholder="Title" value="${link.title || ''}" data-index="${i}">
-                    <input type="text" class="link-url" placeholder="https://..." value="${link.url || ''}" data-index="${i}">
+            <div class="link-editor-row" data-index="${i}">
+                <div class="link-editor-icon">${this.getLinkIcon(link.url)}</div>
+                <div class="link-editor-inputs">
+                    <input type="text" class="link-title" placeholder="Link title" value="${link.title || ''}" data-index="${i}">
+                    <input type="text" class="link-url" placeholder="https://example.com" value="${link.url || ''}" data-index="${i}">
                 </div>
-                <button class="btn btn-danger btn-sm remove-link" data-index="${i}">✕</button>
+                <button class="btn-icon-only remove-link" data-index="${i}" title="Remove">${this.icons.trash}</button>
             </div>
         `).join('');
     }
@@ -771,8 +826,11 @@ class App {
         // Update icons on URL change
         document.querySelectorAll('.link-url').forEach(input => {
             input.oninput = () => {
-                const icon = input.closest('.link-item').querySelector('.link-icon');
-                icon.innerHTML = this.getLinkIcon(input.value);
+                const row = input.closest('.link-editor-row');
+                if (row) {
+                    const icon = row.querySelector('.link-editor-icon');
+                    if (icon) icon.innerHTML = this.getLinkIcon(input.value);
+                }
             };
         });
     }
@@ -807,7 +865,7 @@ class App {
         if (!user || !user.published) {
             this.render(`
                 <nav class="navbar">
-                    <div class="logo" style="cursor:pointer" onclick="app.navigate('/')">File<span>Share</span></div>
+                    <div class="logo" style="cursor:pointer" onclick="app.navigate('/')">Link<span>space</span></div>
                 </nav>
                 <div class="profile-page">
                     <div class="card" style="text-align:center; padding: 3rem;">
@@ -825,7 +883,7 @@ class App {
 
         this.render(`
             <nav class="navbar">
-                <div class="logo" style="cursor:pointer" onclick="app.navigate('/')">File<span>Share</span></div>
+                <div class="logo" style="cursor:pointer" onclick="app.navigate('/')">Link<span>space</span></div>
                 <div class="nav-links">
                     ${isOwner ? '<button class="btn btn-ghost" onclick="app.showDashboard()">Edit Profile</button>' : ''}
                     <button class="btn btn-ghost" onclick="app.navigate('/')">Back</button>
@@ -955,7 +1013,7 @@ class App {
         
         this.render(`
             <nav class="navbar">
-                <div class="logo">File<span>Share</span></div>
+                <div class="logo">Link<span>space</span></div>
                 <div class="nav-links">
                     <button class="btn btn-ghost" id="back-dashboard-btn">Back to Dashboard</button>
                     <button class="btn btn-ghost" id="logout-btn">Logout</button>
@@ -963,36 +1021,43 @@ class App {
             </nav>
             <main class="main">
                 <div class="admin-panel">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Admin Panel - User Management</h3>
-                            <span class="admin-badge"><span class="admin-icon">${this.icons.crown}</span> Admin Access</span>
+                    <div class="admin-header">
+                        <div class="admin-title">
+                            <h1>User Management</h1>
+                            <span class="admin-badge">Admin</span>
                         </div>
-                        <p style="color: var(--text-dim); margin-bottom: 1.5rem;">Manage all user accounts. You can reset passwords, unpublish profiles, or terminate accounts.</p>
-                        
-                        <div class="admin-stats">
-                            <div class="stat-item">
-                                <span class="stat-value">${allUsers.length}</span>
-                                <span class="stat-label">Total Users</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value">${allUsers.filter(u => u.published).length}</span>
-                                <span class="stat-label">Published</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value">${allUsers.filter(u => !u.published).length}</span>
-                                <span class="stat-label">Unpublished</span>
-                            </div>
+                        <p class="admin-subtitle">Manage accounts, reset passwords, and control user access.</p>
+                    </div>
+                    
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat">
+                            <div class="admin-stat-value">${allUsers.length}</div>
+                            <div class="admin-stat-label">Total Users</div>
+                        </div>
+                        <div class="admin-stat">
+                            <div class="admin-stat-value admin-stat-success">${allUsers.filter(u => u.published).length}</div>
+                            <div class="admin-stat-label">Published</div>
+                        </div>
+                        <div class="admin-stat">
+                            <div class="admin-stat-value admin-stat-warning">${allUsers.filter(u => !u.published).length}</div>
+                            <div class="admin-stat-label">Unpublished</div>
                         </div>
                     </div>
                     
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>All Users</h3>
-                        </div>
-                        <div class="admin-user-list" id="admin-user-list">
-                            ${allUsers.map(u => this.renderAdminUserRow(u)).join('')}
-                        </div>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Status</th>
+                                    <th>Bio</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${allUsers.map(u => this.renderAdminUserRow(u)).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </main>
@@ -1011,44 +1076,44 @@ class App {
         if (!user || !user.username || !user.slug) return '';
         
         const isProtected = CONFIG.ADMIN_USERS.includes(user.slug);
-        const tagInfo = this.getUserTag(user.slug);
-        const tagHtml = tagInfo ? `<span class="user-tag ${tagInfo.tagClass}" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">${tagInfo.tag}</span>` : '';
+        const tagHtml = this.renderTag(user.slug);
         
         return `
-            <div class="admin-user-row" data-slug="${user.slug}">
-                <div class="admin-user-info">
-                    <div class="admin-user-avatar">${user.username.charAt(0).toUpperCase()}</div>
-                    <div class="admin-user-details">
-                        <div class="admin-user-name">
-                            ${user.username} ${tagHtml}
-                            ${isProtected ? `<span class="protected-badge" title="Protected Account">${this.icons.shield}</span>` : ''}
-                        </div>
-                        <div class="admin-user-meta">
-                            <span class="status-indicator ${user.published ? 'published' : 'unpublished'}">
-                                <span class="status-icon">${user.published ? this.icons.checkCircle : this.icons.xCircle}</span>
-                                ${user.published ? 'Published' : 'Unpublished'}
-                            </span>
-                            <span class="user-bio-preview">${user.bio ? user.bio.substring(0, 50) + (user.bio.length > 50 ? '...' : '') : 'No bio'}</span>
+            <tr class="admin-row${isProtected ? ' admin-row-protected' : ''}" data-slug="${user.slug}">
+                <td>
+                    <div class="admin-user-cell">
+                        <div class="admin-avatar">${user.username.charAt(0).toUpperCase()}</div>
+                        <div class="admin-user-info">
+                            <span class="admin-username">${user.username}</span>
+                            ${tagHtml}
+                            ${isProtected ? '<span class="admin-shield" title="Protected">🛡️</span>' : ''}
                         </div>
                     </div>
-                </div>
-                <div class="admin-user-actions">
-                    <button class="btn btn-warning btn-sm admin-reset-password" data-slug="${user.slug}" title="Reset Password">
-                        <span class="btn-icon">${this.icons.key}</span>
-                        <span class="btn-text">Reset PW</span>
-                    </button>
-                    ${!isProtected ? `
-                        <button class="btn btn-ghost btn-sm admin-toggle-publish" data-slug="${user.slug}" data-published="${user.published}" title="${user.published ? 'Unpublish' : 'Publish'}">
-                            <span class="btn-icon">${user.published ? this.icons.eyeOff : this.icons.eye}</span>
-                            <span class="btn-text">${user.published ? 'Unpublish' : 'Publish'}</span>
+                </td>
+                <td>
+                    <span class="admin-status ${user.published ? 'admin-status-published' : 'admin-status-unpublished'}">
+                        ${user.published ? 'Published' : 'Draft'}
+                    </span>
+                </td>
+                <td>
+                    <span class="admin-bio">${user.bio ? user.bio.substring(0, 40) + (user.bio.length > 40 ? '...' : '') : '—'}</span>
+                </td>
+                <td>
+                    <div class="admin-actions">
+                        <button class="admin-btn admin-btn-reset admin-reset-password" data-slug="${user.slug}" title="Reset Password">
+                            Reset PW
                         </button>
-                        <button class="btn btn-danger btn-sm admin-terminate" data-slug="${user.slug}" title="Terminate Account">
-                            <span class="btn-icon">${this.icons.trash}</span>
-                            <span class="btn-text">Terminate</span>
-                        </button>
-                    ` : `<span class="protected-label"><span class="btn-icon">${this.icons.shield}</span> Protected</span>`}
-                </div>
-            </div>
+                        ${!isProtected ? `
+                            <button class="admin-btn admin-btn-toggle admin-toggle-publish" data-slug="${user.slug}" data-published="${user.published}" title="${user.published ? 'Unpublish' : 'Publish'}">
+                                ${user.published ? 'Unpublish' : 'Publish'}
+                            </button>
+                            <button class="admin-btn admin-btn-delete admin-terminate" data-slug="${user.slug}" title="Delete">
+                                Delete
+                            </button>
+                        ` : '<span class="admin-protected-text">Protected</span>'}
+                    </div>
+                </td>
+            </tr>
         `;
     }
 
